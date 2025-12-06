@@ -21,7 +21,7 @@ export const RecruiterChat: React.FC<RecruiterChatProps> = ({ contextData, jobDe
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Chat Session
+  // Initialize Chat Session with API Key from process.env
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const [chatSession, setChatSession] = useState<any>(null);
 

@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { OptimizeResponse, CVInputType, ToneType, BulletStyle, LanguageOption, InterviewAnalysis, JobCultureAnalysis, ATSReport, CareerRoadmap, PortfolioStyle, TechChallenge, CodeReview } from "../types";
 
+// Initialize the GoogleGenAI client with the API key from the environment variable.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const getSystemPrompt = (language: LanguageOption) => `
@@ -508,7 +509,7 @@ export const generateCareerRoadmap = async (currentCV: OptimizeResponse['optimiz
         `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-pro-preview",
             contents: { parts: [{ text: prompt }] },
             config: { responseMimeType: "application/json" }
         });
@@ -588,7 +589,7 @@ export const generatePortfolioCode = async (cvContent: OptimizeResponse['optimiz
         `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-pro-preview",
             contents: { parts: [{ text: prompt }] },
             config: {
                 temperature: 0.6,
@@ -634,7 +635,7 @@ export const generateTechChallenge = async (jobDescription: string, skills: stri
         `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-pro-preview",
             contents: { parts: [{ text: prompt }] },
             config: { responseMimeType: "application/json" }
         });
@@ -675,7 +676,7 @@ export const reviewCodeChallenge = async (challenge: TechChallenge, userCode: st
         `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-pro-preview",
             contents: { parts: [{ text: prompt }] },
             config: { responseMimeType: "application/json" }
         });

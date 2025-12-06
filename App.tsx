@@ -30,24 +30,25 @@ const App: React.FC = () => {
 
   // Load history on mount
   useEffect(() => {
-    const saved = localStorage.getItem('cv_optimizer_history');
-    if (saved) {
-      try {
-        setHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse history", e);
-      }
+    try {
+        const saved = localStorage.getItem('cv_optimizer_history');
+        if (saved) {
+          setHistory(JSON.parse(saved));
+        }
+    } catch (e) {
+        console.warn("Failed to access localStorage for history", e);
     }
-    const savedDraft = localStorage.getItem('cv_optimizer_draft');
-    if (savedDraft) {
-      try {
-        const draft = JSON.parse(savedDraft);
-        setCvText(draft.cvText || '');
-        setJobDesc(draft.jobDesc || '');
-        setTargetLanguage(draft.targetLanguage || 'Auto');
-      } catch (e) {
-        console.error("Failed to parse draft", e);
-      }
+
+    try {
+        const savedDraft = localStorage.getItem('cv_optimizer_draft');
+        if (savedDraft) {
+          const draft = JSON.parse(savedDraft);
+          setCvText(draft.cvText || '');
+          setJobDesc(draft.jobDesc || '');
+          setTargetLanguage(draft.targetLanguage || 'Auto');
+        }
+    } catch (e) {
+        console.warn("Failed to access localStorage for draft", e);
     }
   }, []);
 
@@ -55,13 +56,21 @@ const App: React.FC = () => {
   useEffect(() => {
     const draft = { cvText, jobDesc, targetLanguage };
     const timeoutId = setTimeout(() => {
-      localStorage.setItem('cv_optimizer_draft', JSON.stringify(draft));
+      try {
+        localStorage.setItem('cv_optimizer_draft', JSON.stringify(draft));
+      } catch (e) {
+        console.warn("Failed to save draft to localStorage", e);
+      }
     }, 1000);
     return () => clearTimeout(timeoutId);
   }, [cvText, jobDesc, targetLanguage]);
 
   const clearDraft = () => {
-    localStorage.removeItem('cv_optimizer_draft');
+    try {
+        localStorage.removeItem('cv_optimizer_draft');
+    } catch (e) {
+        console.warn("Failed to clear draft from localStorage", e);
+    }
     setCvText('');
     setJobDesc('');
     setTargetLanguage('Auto');
@@ -83,7 +92,11 @@ const App: React.FC = () => {
     };
     const newHistory = [newItem, ...history].slice(0, 10);
     setHistory(newHistory);
-    localStorage.setItem('cv_optimizer_history', JSON.stringify(newHistory));
+    try {
+        localStorage.setItem('cv_optimizer_history', JSON.stringify(newHistory));
+    } catch (e) {
+        console.warn("Failed to save history to localStorage", e);
+    }
   };
 
   const loadFromHistory = (item: HistoryItem) => {
@@ -95,7 +108,11 @@ const App: React.FC = () => {
     e.stopPropagation();
     const newHistory = history.filter(h => h.id !== id);
     setHistory(newHistory);
-    localStorage.setItem('cv_optimizer_history', JSON.stringify(newHistory));
+    try {
+        localStorage.setItem('cv_optimizer_history', JSON.stringify(newHistory));
+    } catch (e) {
+        console.warn("Failed to update history in localStorage", e);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
