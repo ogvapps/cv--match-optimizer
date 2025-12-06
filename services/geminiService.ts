@@ -1,8 +1,34 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { OptimizeResponse, CVInputType, ToneType, BulletStyle, LanguageOption, InterviewAnalysis, JobCultureAnalysis, ATSReport, CareerRoadmap, PortfolioStyle, TechChallenge, CodeReview } from "../types";
 
-// Initialize the GoogleGenAI client with the API key from the environment variable.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to safely retrieve API Key from various environment configurations
+const getApiKey = (): string => {
+  // 1. Try standard process.env (Node/Webpack/System default)
+  if (typeof process !== 'undefined' && process.env?.API_KEY) {
+    return process.env.API_KEY;
+  }
+  
+  // 2. Try Vite specific variables (Client-side)
+  try {
+    // @ts-ignore
+    const env = import.meta.env;
+    if (env) {
+      // Prioritize VITE_GEMINI_API_KEY as requested
+      if (env.VITE_GEMINI_API_KEY) return env.VITE_GEMINI_API_KEY;
+      if (env.VITE_API_KEY) return env.VITE_API_KEY;
+    }
+  } catch (e) {
+    // Ignore errors accessing import.meta
+  }
+
+  // 3. Fallback to process.env.API_KEY again if it might be replaced by bundler as a string literal
+  // This is often how Vercel/Vite handles 'process.env.API_KEY' in client code
+  return process.env.API_KEY || "";
+};
+
+const apiKey = getApiKey();
+// Ensure we don't crash on empty key during initialization, although calls will fail later if invalid
+const ai = new GoogleGenAI({ apiKey: apiKey || "MISSING_KEY" });
 
 const getSystemPrompt = (language: LanguageOption) => `
 ACTÚA COMO: Un experto mundial en Reclutamiento, Marca Personal, Compensación y Networking.

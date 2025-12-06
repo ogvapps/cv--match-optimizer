@@ -21,8 +21,18 @@ export const RecruiterChat: React.FC<RecruiterChatProps> = ({ contextData, jobDe
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Chat Session with API Key from process.env
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Initialize Chat Session with Safe API Key Logic
+  const getApiKey = (): string => {
+    if (typeof process !== 'undefined' && process.env?.API_KEY) return process.env.API_KEY;
+    try {
+      // @ts-ignore
+      const env = import.meta.env;
+      if (env) return env.VITE_GEMINI_API_KEY || env.VITE_API_KEY || "";
+    } catch(e) {}
+    return process.env.API_KEY || "";
+  };
+
+  const ai = new GoogleGenAI({ apiKey: getApiKey() || "MISSING_KEY" });
   const [chatSession, setChatSession] = useState<any>(null);
 
   useEffect(() => {
@@ -43,11 +53,16 @@ export const RecruiterChat: React.FC<RecruiterChatProps> = ({ contextData, jobDe
        Mantén las respuestas concisas (máx 3 frases) a menos que te pidan más detalle.
        `;
 
-       const chat = ai.chats.create({
-         model: "gemini-2.5-flash",
-         config: { systemInstruction }
-       });
-       setChatSession(chat);
+       try {
+         const chat = ai.chats.create({
+           model: "gemini-2.5-flash",
+           config: { systemInstruction }
+         });
+         setChatSession(chat);
+       } catch (error) {
+         console.error("Failed to initialize chat session", error);
+         setMessages(prev => [...prev, { role: 'model', text: "Error: No se pudo conectar con el servicio de IA. Verifica tu API Key." }]);
+       }
     }
   }, [isOpen]);
 
